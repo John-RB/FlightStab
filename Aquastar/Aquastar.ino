@@ -154,6 +154,15 @@ prog_char pid_roll[] PROGMEM = "Ail ";
 prog_char pid_pitch[] PROGMEM = "Ele ";
 prog_char pid_yaw[] PROGMEM = "Rud ";
 
+prog_char dlpf[] PROGMEM = "LOW PASS FILTER";
+prog_char bw_0[] PROGMEM = "256HZ ";
+prog_char bw_1[] PROGMEM = "188HZ ";
+prog_char bw_2[] PROGMEM = "98HZ ";
+prog_char bw_3[] PROGMEM = "42HZ ";
+prog_char bw_4[] PROGMEM = "20HZ ";
+prog_char bw_5[] PROGMEM = "10HZ ";
+prog_char bw_6[] PROGMEM = "5HZ ";
+
 prog_char *param_text0[] PROGMEM = 
 {status, 
   status_device_id, status_device_ver, status_device_eeprom};
@@ -196,8 +205,11 @@ prog_char *param_text12[] PROGMEM = {pid_rate,
 
 prog_char *param_text13[] PROGMEM = {pid_hold,
   pid_roll, pid_pitch, pid_yaw};
+
+prog_char *param_text14[] PROGMEM = {dlpf,
+  bw_0, bw_1, bw_2, bw_3, bw_4, bw_5, bw_6};
    
-prog_char *param_text14[] PROGMEM = {eeprom, 
+prog_char *param_text15[] PROGMEM = {eeprom, 
   eeprom_instr, eeprom_update_cfg, eeprom_erase_cfg, eeprom_erase_stats};
 
 prog_char **param_textB[] = {
@@ -215,7 +227,8 @@ prog_char **param_textB[] = {
   param_text11,
   param_text12,
   param_text13,
-  param_text14
+  param_text14,
+  param_text15
 };
   
 #define PARAM_TEXT(i, j) (const __FlashStringHelper*) pgm_read_word(&((param_textB[i])[j]))
@@ -262,6 +275,7 @@ int8_t * const param_pval[] = {
   &cfg.vr_gain[0],
   (int8_t*) &pid_param_array_rate,
   (int8_t*) &pid_param_array_hold,
+  (int8_t*) &cfg.gyro_dlpf,
   &param_val_eeprom,
 };
   
@@ -280,6 +294,7 @@ enum PARAM_TYPE param_type[] = {
   PARAM_VR_GAIN,
   PARAM_PID,
   PARAM_PID,
+  PARAM_ENUM,
   PARAM_EEPROM,
 };
 
@@ -298,6 +313,7 @@ const int16_t param_min[] = {
   -128, // vr_gain
   0, // pid_rate
   0, // pid_hold
+  BW_256HZ, // Bandwidth Max
   1 // eeprom
 };
 
@@ -316,6 +332,7 @@ const int16_t param_max[] = {
   127, // vr_gain
   1000, // pid_rate
   1000, // pid_hold
+  BW_5HZ, // Bandwidth Min
   4 // eeprom
 };
   

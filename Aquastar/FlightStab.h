@@ -8,7 +8,7 @@ aquastar programming box to be in sync with the flightstab firmware.
 #if !defined(FLIGHTSTAB_H)
 #define FLIGHTSTAB_H
 
-const int8_t eeprom_cfg_ver = 10;
+const int8_t eeprom_cfg_ver = 11;
 
 enum DEVICE_IDS {DEVICE_UNDEF, DEVICE_RX3S_V1, DEVICE_RX3S_V2V3, DEVICE_NANOWII, DEVICE_EAGLE_A3PRO, DEVICE_RX3SM, DEVICE_MINI_MWC, DEVICE_FLIP_1_5};
 
@@ -26,6 +26,11 @@ enum INFLIGHT_CALIBRATE {INFLIGHT_CALIBRATE_DISABLE=1, INFLIGHT_CALIBRATE_ENABLE
 
 enum SERIALRX_CHAN {SERIALRX_R, SERIALRX_E, SERIALRX_T, SERIALRX_A, // canonical serialrx channel order RETA1a2F
                     SERIALRX_1, SERIALRX_a, SERIALRX_2, SERIALRX_F};
+
+// The values used for the digital low pass filter settings are 1 based for compatibility with the programming box.
+// Thus one must be subtracted from the EEPROM value before sending to the Gyro
+enum DLPF {BW_256HZ=1,BW_188HZ, BW_98HZ, BW_42HZ, BW_20HZ, BW_10HZ, BW_5HZ};
+#define DLPF_MASK 0x07
 
 const int8_t serialrx_num_chan = 8;
 const int8_t vr_gain_use_pot = -128;
@@ -60,6 +65,7 @@ struct _eeprom_cfg {
   int8_t vr_gain[3];  
   struct _pid_param pid_param_rate;
   struct _pid_param pid_param_hold;
+  int8_t gyro_dlpf;
   uint8_t chksum;
 };
 

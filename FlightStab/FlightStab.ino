@@ -700,6 +700,7 @@ int16_t ail_out2, ele_out2, rud_out2, ailr_out2, thr_out2, flp_out2, aux2_out2;
 int16_t gyro0[3] = {0, 0, 0}; // calibration sets zero-movement-measurement offsets
 int16_t gyro[3] = {0, 0, 0}; // full scale = 16b-signed = +/-2000 deg/sec
 int16_t accel[3] = {0, 0, 0}; // full scale = 16b-signed = 16g? (TODO)
+int8_t gyro_low_pass_filter = BW_5HZ - 1;  // Default Zero Based Digital Low Pass Filter to 5HZ, get desired value from EEPROM
 
 // stabilizer output
 int16_t correction[3] = {0, 0, 0};
@@ -1018,8 +1019,7 @@ int8_t mpu6050_init()
   i2c_write_reg(MPU6050_ADDR, 0x6B, 0x80); // reset
   delay1(50);
   i2c_write_reg(MPU6050_ADDR, 0x6B, 0x03); // clock=pll with z-gyro ref
-  i2c_write_reg(MPU6050_ADDR, 0x1A, 0x0); // accel_bw/delay=260hz/0ms gyro_bw/delay/sample=256hz/0.98ms/8khz
-  //i2c_write_reg(MPU6050_ADDR, 0x1A, 0x6); // accel_bw/delay=5hz/19ms gyro_bw/delay/sample=5hz/18.6ms/1khz
+  i2c_write_reg(MPU6050_ADDR, 0x1A, gyro_low_pass_filter - 1); // accel_bw/delay and gyro_bw/delay set from configuration
   i2c_write_reg(MPU6050_ADDR, 0x1B, 0x18); // fs=2000deg/s
 
   return ((i2c_read_reg(MPU6050_ADDR, 0x75) & 0x7E) >> 1) == 0x34; // chip id
@@ -1052,7 +1052,7 @@ int8_t itg3205_init()
   i2c_write_reg(ITG3205_ADDR, 0x3E, 0x80); // reset
   delay1(50);
   i2c_write_reg(ITG3205_ADDR, 0x3E, 0x03); // clock=pll with z-gyro ref
-  i2c_write_reg(ITG3205_ADDR, 0x16, 0x18 | 0x6); // fs=2000deg/s | lpf=5hz sample=1khz
+  i2c_write_reg(ITG3205_ADDR, 0x16, 0x18 | gyro_low_pass_filter - 1); // accel_bw/delay and gyro_bw/delay set from configuration
 
   return ((i2c_read_reg(ITG3205_ADDR, 0x00) & 0x7E) >> 1) == 0x34; // chip id
 }
@@ -1584,15 +1584,14 @@ void init_imu()
   }
   accelgyro.setFullScaleGyroRange(MPU6050_GYRO_FS_2000);
   accelgyro.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
-  accelgyro.setDLPFMode(MPU6050_DLPF_BW_256);
+  accelgyro.setDLPFMode(gyro_low_pass_filter - 1);
   accelgyro.setClockSource(MPU6050_CLOCK_PLL_ZGYRO); 
 #elif defined(USE_ITG3200)
   Wire.begin();
   itg3205_gyro.initialize();
   itg3205_gyro.setClockSource(ITG3200_CLOCK_PLL_XGYRO); 
   itg3205_gyro.setFullScaleRange(ITG3200_FULLSCALE_2000); 
-  itg3205_gyro.setDLPFBandwidth(ITG3200_DLPF_BW_5); 
-//  gyro.setDLPFBandwidth(ITG3200_DLPF_BW_256); 
+  itg3205_gyro.setDLPFBandwidth(gyro_low_pass_filter - 1); 
   if (!itg3205_gyro.testConnection()) {
     set_led_msg(2, 5, LED_SHORT);
   }
@@ -2312,6 +2311,7 @@ void setup()
   }
 #endif
   cfg.mixer_epa_mode = MIXER_EPA_FULL;
+  cfg.gyro_dlpf = BW_5HZ;
   
 #if (defined(SERIALRX_SPEKTRUM) || defined(SERIALRX_SBUS)) // || defined(SERIALRX_SRXL))
   cfg.servo_frame_rate = 20; // safe rate for analog servos
@@ -2476,7 +2476,12 @@ void setup()
     break;       
   }
 
-  minimum_servo_frame_time = cfg.servo_frame_rate * 1000; // ms to us  
+  minimum_servo_frame_time = cfg.servo_frame_rate * 1000; // ms to us
+  
+  gyro_low_pass_filter = cfg.gyro_dlpf  & DLPF_MASK;  // Filter Frequency from EEPROM, verify in range
+  if (gyro_low_pass_filter > BW_5HZ)
+  	gyro_low_pass_filter = BW_5HZ;
+  
   
 #if defined(SERIALRX_ENABLED)
   // set up serialrx order
