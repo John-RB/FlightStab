@@ -1,0 +1,28 @@
+The target system is: Arduino -  - 
+The host system is: Windows - 5.1 - x86
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: C:/WinAVR-20100110/bin/avr-gcc.exe 
+Build flags: 
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is GNU, found in "C:/Radio Control/HobbyKing/RX3S Flight Stabilizer/SbusOut/CMakeFiles/2.8.12.1/CompilerIdC/a.out"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: C:/WinAVR-20100110/bin/avr-g++.exe 
+Build flags: 
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+
+The CXX compiler identification is GNU, found in "C:/Radio Control/HobbyKing/RX3S Flight Stabilizer/SbusOut/CMakeFiles/2.8.12.1/CompilerIdCXX/a.out"
+

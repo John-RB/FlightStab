@@ -21,6 +21,7 @@ bool ow_loop(); // OneWireSerial.ino
  * device definitions (TODO: move to separate files)
  ***************************************************************************************************************/
 
+// **** DEVICES ****
 //#define RX3S_V1
 //#define RX3S_V2
 //#define RX3SM
@@ -31,18 +32,22 @@ bool ow_loop(); // OneWireSerial.ino
 //#define FLIP_1_5
 //#define NANO_MPU6050
 
+// **** SERIAL MODE ****
 //#define SERIALRX_CPPM // over a digital-in pin (preferably ICP)
 //#define SERIALRX_SPEKTRUM // over the serial port
 //#define SERIALRX_SBUS // over the serial port
+//#define SBUS_OUT // Generate S.BUS frame outputs on USART TX, disable PWM pulse generation
 //#define SERIALRX_SRXL // over the serial port SRXL MPX or HoTT
 //#define SERIALRX_DEFMPX // default MPX channel mapping
 
+// **** MISC OPTIONS ****
 //#define NO_ONEWIRE // remove one-wire serial config code
 //#define NO_STICKCONFIG // remove stick config code
 
 //#define SERIAL_DEBUG // enable debug messages through serial port
 //#define DUMP_SENSORS // dump sensors through the serial port
 //#define LED_TIMING // disable LED_MSG and use LED_TIMING_START/STOP to measure timings
+//#define ORIGINAL_PWM_ORDER // Use original PWM output order of RETA1a2F
 
 //#define USE_I2CDEVLIB // interrupt-based wire and i2cdev libraries
 //#define USE_I2CLIGHT // poll-based i2c access routines
@@ -102,8 +107,13 @@ bool ow_loop(); // OneWireSerial.ino
 #define DIN_PORTD {NULL, &ail_sw, &ele_sw, &rud_sw, NULL, NULL, NULL, NULL}
 
 // <SERVO>
-#define PWM_CHAN_PIN {6, 5, -1, 4, -1, 7, -1, -1} // RETA1a2F
-#define PWM_CHAN_PIN_SERIALRX {6, 5, 10, 4, -1, 7, -1, 9} // RETA1a2F
+#if defined(ORIGINAL_PWM_ORDER)
+  #define PWM_CHAN_PIN {6, 5, -1, 4, -1, 7, -1, -1} // RETA1a2F
+  #define PWM_CHAN_PIN_SERIALRX {6, 5, 10, 4, -1, 7, -1, 9} // RETA1a2F
+#else
+  #define PWM_CHAN_PIN {4, 7, 5, 9, 6, -1, -1, -1} // AaEFRT21
+  #define PWM_CHAN_PIN_SERIALRX {4, 7, 5, 9, 6, 10, -1, -1} // AaEFRT21
+#endif
 
 // <IMU>
 #define USE_ITG3200
@@ -171,8 +181,13 @@ bool ow_loop(); // OneWireSerial.ino
 #define DIN_PORTD {&aux_sw, &ail_sw, &ele_sw, &rud_sw, NULL, NULL, NULL, NULL}
 
 // <SERVO>
-#define PWM_CHAN_PIN {6, 5, -1, 4, -1, 7, -1, -1} // RETA1a2F
-#define PWM_CHAN_PIN_SERIALRX {6, 5, 10, 4, -1, 7, 11, 9} // RETA1a2F
+#if defined(ORIGINAL_PWM_ORDER)
+  #define PWM_CHAN_PIN {6, 5, -1, 4, -1, 7, -1, -1} // RETA1a2F
+  #define PWM_CHAN_PIN_SERIALRX {6, 5, 10, 4, -1, 7, -1, 9} // RETA1a2F
+#else
+  #define PWM_CHAN_PIN {4, 7, 5, 9, 6, -1, -1, -1} // AaEFRT21
+  #define PWM_CHAN_PIN_SERIALRX {4, 7, 5, 9, 6, 10, -1, -1} // AaEFRT21
+#endif
 
 // <IMU>
 #define USE_ITG3200
@@ -280,8 +295,13 @@ bool ow_loop(); // OneWireSerial.ino
 #define DIN_PORTD {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
 
 // <SERVO>
-#define PWM_CHAN_PIN {11, 10, -1, 9, -1, 13, -1, -1} // RETA1a2F
-#define PWM_CHAN_PIN_SERIALRX {11, 10, 5, 9, -1, 13, -1, 6} // RETA1a2F
+#if defined(ORIGINAL_PWM_ORDER)
+  #define PWM_CHAN_PIN {11, 10, -1, 9, -1, 13, -1, -1} // RETA1a2F
+  #define PWM_CHAN_PIN_SERIALRX {11, 10, 5, 9, -1, 13, -1, 6} // RETA1a2F
+#else
+  #define PWM_CHAN_PIN {9, 13, 10, 6, 11, -1, -1, -1} // AaEFRT21
+  #define PWM_CHAN_PIN_SERIALRX {9, 13, 10, 6, 11, 5, -1, -1} // AaEFRT21
+#endif
 
 // <IMU>
 #define USE_MPU6050
@@ -406,6 +426,12 @@ bool ow_loop(); // OneWireSerial.ino
 
 // <SERVO>
 #define PWM_CHAN_PIN {6, 5, 3, 10, -1, 11, 16, 9} // RETA1a2F
+
+#if defined(ORIGINAL_PWM_ORDER)
+  #define PWM_CHAN_PIN {6, 5, 3, 10, -1, 11, 16, 9} // RETA1a2F
+#else
+  #define PWM_CHAN_PIN {10, 11, 5, 9, 6, 3, 16, -1} // AaEFRT21
+#endif
 #define PWM_CHAN_PIN_SERIALRX PWM_CHAN_PIN // same pwm output list
 
 // <IMU>
@@ -470,7 +496,11 @@ bool ow_loop(); // OneWireSerial.ino
 #define DIN_PORTD {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
 
 // <SERVO>
-#define PWM_CHAN_PIN {3, 9, 15, 10, -1, 11, 12, 16} // RETA1a2F
+#if defined(ORIGINAL_PWM_ORDER)
+  #define PWM_CHAN_PIN {3, 9, 15, 10, -1, 11, 12, 16} // RETA1a2F
+#else
+  #define PWM_CHAN_PIN {10, 11, 9, 16, 3, 15, 12, -1} // AaEFRT21
+#endif
 #define PWM_CHAN_PIN_SERIALRX PWM_CHAN_PIN // same pwm output list
 
 // <IMU>
@@ -730,11 +760,22 @@ const int8_t serialrx_order_TAERa1f2[rx_chan_size] = {
   SERIALRX_T, SERIALRX_A, SERIALRX_E, SERIALRX_R, SERIALRX_a, SERIALRX_1, SERIALRX_F, SERIALRX_2};
 
 volatile int16_t *rx_chan[rx_chan_size] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-  
+
+#if defined(SERIALRX_SBUS) && defined(SBUS_OUT)
+// serialtx_* order
+volatile int16_t *tx_chan_map[rx_chan_size] = 
+  {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}; // see enum SERIALRX_CHAN
+#endif  
+
 // pwm chan order
 const int8_t pwm_chan_size = 8;
-const volatile int16_t *pwm_chan_map[pwm_chan_size] = 
-  {&rud_out, &ele_out, &thr_out, &ail_out, NULL, &ailr_out, &aux2_out, &flp_out}; // see enum SERIALRX_CHAN  
+#if defined(ORIGINAL_PWM_ORDER)
+  const volatile int16_t *pwm_chan_map[pwm_chan_size] = 
+    {&rud_out, &ele_out, &thr_out, &ail_out, NULL, &ailr_out, &aux2_out, &flp_out}; // see enum SERIALRX_CHAN 
+#else
+  const volatile int16_t *pwm_chan_map[pwm_chan_size] = 
+    {&ail_out, &ailr_out, &ele_out, &flp_out, &rud_out, &thr_out, &aux2_out, NULL}; // AaEFRT21 
+#endif  
   
 // stabilization mode
 enum STAB_MODE {STAB_RATE, STAB_HOLD};
@@ -2023,7 +2064,11 @@ void dump_sensors()
     // but ensure minimum time between servo frames, or Analog servos will not be happy!!!
     if (!servo_busy && servo_sync && (int32_t)(t - last_servo_frame_time) > minimum_servo_frame_time) {
       servo_sync = false;
-      start_servo_frame();
+      #if defined(SBUS_OUT)&& defined(SERIALRX_SBUS)
+        send_sbus();
+      #else  
+        start_servo_frame();
+      #endif  
       last_servo_frame_time = t;
     }   
 
@@ -2313,7 +2358,7 @@ void setup()
   cfg.mixer_epa_mode = MIXER_EPA_FULL;
   cfg.gyro_dlpf = BW_5HZ;
   
-#if (defined(SERIALRX_SPEKTRUM) || defined(SERIALRX_SBUS)) // || defined(SERIALRX_SRXL))
+#if ((defined(SERIALRX_SPEKTRUM) || defined(SERIALRX_SBUS)) && !defined(SBUS_OUT)) //
   cfg.servo_frame_rate = 20; // safe rate for analog servos
 #else
   cfg.servo_frame_rate = 0; // no min interval, rx will drive the update rate
@@ -2492,7 +2537,33 @@ void setup()
   // update pwm output list if needed
   const volatile int8_t ppwm_chan_pin[pwm_chan_size] = PWM_CHAN_PIN_SERIALRX;
   for (i=0; i<pwm_chan_size; i++) pwm_chan_pin[i] = ppwm_chan_pin[i];
-#endif
+  
+  #if defined(SBUS_OUT)
+  // Map outputs for SBUS Output
+  for (i=0; i<rx_chan_size; i++) {
+    switch (cfg.serialrx_order[i]) {
+    	case SERIALRX_R: tx_chan_map[i] = &rud_out2;
+    		break;
+    	case SERIALRX_E: tx_chan_map[i] = &ele_out2;
+    		break;
+    	case SERIALRX_T: tx_chan_map[i] = &thr_out2;
+    		break;
+    	case SERIALRX_A: tx_chan_map[i] = &ail_out2;
+    		break;
+    	case SERIALRX_1: tx_chan_map[i] = &aux_in2;
+    		break;
+    	case SERIALRX_a: tx_chan_map[i] = &ailr_out2;
+    		break;
+    	case SERIALRX_2: tx_chan_map[i] = &aux2_out2;
+    		break;
+    	case SERIALRX_F: tx_chan_map[i] = &flp_out2;
+    		break;  
+    	default:         tx_chan_map[i] = NULL;
+    		break;
+    }
+  }  	
+  #endif // SBUS_OUT
+#endif // SERIALRX_ENABLED
 
   // init digital in for dip switches to read config settings
   init_digital_in_sw(); // sw
@@ -2599,6 +2670,8 @@ void loop()
   int16_t vr_gain[3]= {0, 0, 0};
   int16_t stick_gain[3];
   int16_t master_gain;
+  
+  int8_t serial_frame_count = 0;
 
 #if !defined(NO_STICKCONFIG)  
   uint32_t stick_config_check_time = t;
@@ -2628,7 +2701,24 @@ again:
 
 #if (defined(SERIALRX_SPEKTRUM) || defined(SERIALRX_SBUS) || defined(SERIALRX_SRXL))
   if (serialrx_update()) {
-    rx_frame_sync = true;
+    // If servo rate is set to 1, skip every other frame
+    // Skip 2 frames when set to 2 
+    switch (minimum_servo_frame_time)	{
+    case 1000: ++serial_frame_count;
+               if (serial_frame_count > 1) {
+      	         serial_frame_count = 0;
+      	         rx_frame_sync = true;
+               }
+               break;	
+    case 2000: ++serial_frame_count;
+               if (serial_frame_count > 2) {
+      	         serial_frame_count = 0;
+      	         rx_frame_sync = true;
+               }
+               break;	                        	
+    default:
+    	       rx_frame_sync = true;
+    }	       
   }
 #endif 
 
@@ -2652,8 +2742,12 @@ again:
     
     //jrb Debug - Remove comment from following line to view master_gain + 1000 on AUX2 output
     //aux2_out2 = RX_WIDTH_LOW_FULL + master_gain;
-     
+   
+#if defined (SERIALRX_SBUS) && defined(SBUS_OUT) 
+    send_sbus();
+#else        
     start_servo_frame();
+#endif    
     last_servo_frame_time = t;
   }   
 
