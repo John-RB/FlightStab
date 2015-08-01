@@ -194,7 +194,7 @@ bool ow_loop(); // OneWireSerial.ino
 #endif
 /* RX3S_V2 *****************************************************************************************************/
 
-/* RX3SM   *****************************************************************************************************/
+/* RX3SM DSM2 & RX3SM DSMx   ***********************************************************************************/
 #if defined(RX3SM)
 #warning RX3SM defined // emit device name
 /*
@@ -203,10 +203,14 @@ bool ow_loop(); // OneWireSerial.ino
  PB1  9 ELE_IN (PWM)      PC1 15/A1 AIL_GAIN       PD1 1 AIL_SW (TXD)
  PB2 10 RUD_IN (PWM)      PC2 16/A2 ELE_GAIN       PD2 2 ELE_SW
  PB3 11 AUX_IN (MOSI/PWM) PC3 17/A3 RUD_GAIN       PD3 3 RUD_SW (PWM)
- PB4 12 UNUSED (MISO)     PC4 18/A4 (SDA)          PD4 4 AUX_SW         V2=AILL_OUT
+ PB4 12 UNUSED (MISO)     PC4 18/A4 (SDA)          PD4 4 AUX_SW [AILR_OUT] V2=AILL_OUT
  PB5 13 LED (SCK)         PC5 19/A5 (SCL)          PD5 5 AILL_OUT (PWM) V2=ELE_OUT
  PB6 14 (XTAL1)           PC6 (RESET)              PD6 6 ELE_OUT (PWM)  V2=RUD_OUT
  PB7 15 (XTAL2)                                    PD7 7 RUD_OUT        V2=AILR_OUT
+
+ The RX3SM DSM2 version uses micro connectors and can't support dual ailerons. 
+ The RX3SM DSMx version has enough pins to support dual ailerons with a minor hardware
+ modification described in the documentation.
 */
 
 #define DEVICE_ID DEVICE_RX3SM
@@ -216,7 +220,7 @@ bool ow_loop(); // OneWireSerial.ino
 
 // <RX> (must in PORT B/D due to ISR)
 #define RX_PORTB {&ail_in, &ele_in, &rud_in, &aux_in, NULL, NULL, NULL, NULL}
-#define RX_PORTD {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+#define RX_PORTD {NULL, &ailr_in, NULL, NULL, NULL, NULL, NULL, NULL}
 
 // <SWITCH>
 #define DIN_PORTB {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
@@ -224,7 +228,7 @@ bool ow_loop(); // OneWireSerial.ino
 #define DIN_PORTD {&vtail_sw, &ail_sw, &ele_sw, &rud_sw, &aux_sw, NULL, NULL, NULL}
 
 // <SERVO>
-#define PWM_CHAN_PIN {7, 6, -1, 5, -1, -1, -1, -1} // RETA1a2F
+#define PWM_CHAN_PIN {7, 6, -1, 5, -1, 4, -1, -1} // RETA1a2F
 
 // <IMU>
 #define USE_ITG3200
@@ -244,7 +248,7 @@ bool ow_loop(); // OneWireSerial.ino
 #define EEPROM_RESET_IN_PIN 6
 
 #endif
-/* RX3SM  *****************************************************************************************************/
+/* RX3SM DSM2 & RX3SM DSMx  ***********************************************************************************/
 
 
 /* NANOWII ****************************************************************************************************/
@@ -2549,7 +2553,7 @@ void setup()
   if (cfg.wing_mode == WING_USE_DIPSW)
     wing_mode = dip_sw_to_wing_mode_map[(vtail_sw ? 0 : 2) | (delta_sw ? 0 : 1)];
 
-  if (wing_mode > WING_VTAIL_1AIL) // constrain to supported modes
+  if (wing_mode > WING_VTAIL_2AIL) // constrain to supported modes
     wing_mode = WING_RUDELE_1AIL;
 #endif // RX3SM
 

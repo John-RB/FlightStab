@@ -1,4 +1,9 @@
-2015-04-14 FlightStab Change Log
+2015-08-01 FlightStab Change Log
+
+2015-08-01
+Added support for dual ailerons when using a hardware modified RX3SM DSMx stabilizer.
+Note that the RX3SM DSM2 device is not supported as it does not have enough connectors.
+
 
 2015-04-14
 Force gyro Digital Low Pass Filter to 5HZ (was 256HZ on MPU-6050 gyros)
