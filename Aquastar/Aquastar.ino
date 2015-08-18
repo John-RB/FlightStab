@@ -128,6 +128,8 @@ prog_char mount_orient[] PROGMEM = "MOUNT ORIENT";
 prog_char mount_normal[] PROGMEM = "Normal";
 prog_char mount_roll90left[] PROGMEM = "Roll 90" XSTR(CHAR_DEGREE) " Left";
 prog_char mount_roll90right[] PROGMEM = "Roll 90" XSTR(CHAR_DEGREE) " Right";
+prog_char mount_rotate90left[] PROGMEM = "Rotate 90" XSTR(CHAR_DEGREE) " Left";
+prog_char mount_rotate90right[] PROGMEM = "Rotate 90" XSTR(CHAR_DEGREE) " Right";
 
 prog_char stick_gain_throw[] PROGMEM = "STK-GAIN THROW";
 prog_char stick_gain_throw_full[] PROGMEM = "Full";
@@ -183,7 +185,7 @@ prog_char *param_text5[] PROGMEM = {serialrx_spektrum_levels,
   serialrx_spektrum_levels_1024, serialrx_spektrum_levels_2048};
   
 prog_char *param_text6[] PROGMEM = {mount_orient, 
-  mount_normal, mount_roll90left, mount_roll90right};
+  mount_normal, mount_roll90left, mount_roll90right, mount_rotate90left, mount_rotate90right};
   
 prog_char *param_text7[] PROGMEM = {stick_gain_throw, 
   stick_gain_throw_full, stick_gain_throw_half, stick_gain_throw_quarter};
@@ -324,7 +326,7 @@ const int16_t param_max[] = {
   20, // servo_frame_rate
   serialrx_num_chan-1, // serialrx_order max chan
   SERIALRX_SPEKTRUM_LEVELS_2048,
-  MOUNT_ROLL_90_RIGHT,    
+  MOUNT_ROTATE_90_RIGHT,    
   STICK_GAIN_THROW_QUARTER,
   MAX_ROTATE_HIGH,
   RATE_MODE_STICK_ROTATE_ENABLE,

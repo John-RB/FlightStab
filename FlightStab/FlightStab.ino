@@ -678,8 +678,9 @@ int16_t ail_in2_mid = RX_WIDTH_MID; // calibration sets stick-neutral-position o
 int16_t ele_in2_mid = RX_WIDTH_MID; //
 int16_t rud_in2_mid = RX_WIDTH_MID; //
 int16_t ailr_in2_mid = RX_WIDTH_MID; //
+int16_t flp_in2_mid = RX_WIDTH_MID; //
 
-int16_t ail_in2_offset, ele_in2_offset, rud_in2_offset; // difference from *_in2_mid (stick position)
+int16_t ail_in2_offset, ele_in2_offset, rud_in2_offset, flp_in2_offset; // difference from *_in2_mid (stick position)
 
 // switch
 int8_t ail_sw = false;
@@ -1574,6 +1575,16 @@ void read_imu()
     gyro[1] = -gyro[2];
     gyro[2] = tmp;
     break;    
+  case MOUNT_ROTATE_90_LEFT: 
+    tmp = gyro[0];
+    gyro[0] = gyro[1];
+    gyro[1] = -tmp;
+    break;    
+  case MOUNT_ROTATE_90_RIGHT: 
+    tmp = gyro[0];
+    gyro[0] = -gyro[1];
+    gyro[1] = tmp;
+    break;    
   }
 }
 
@@ -1690,13 +1701,14 @@ void calibrate_print_stat(struct _calibration *pcal)
 
 void calibrate_rx(struct _calibration *prx_cal)
 {
-  int16_t sample[4];
+  int16_t sample[5];
   int8_t is_calibrating = true;
   
   sample[0] = ail_in2;
   sample[1] = ele_in2;
   sample[2] = rud_in2;
   sample[3] = ailr_in2;
+  sample[4] = flp_in2;
   calibrate_update_stat(prx_cal, sample);
   
   if (++prx_cal->num_samples == 100) {
@@ -1706,6 +1718,7 @@ void calibrate_rx(struct _calibration *prx_cal)
       ele_in2_mid = prx_cal->mean[1];
       rud_in2_mid = prx_cal->mean[2];
       ailr_in2_mid = prx_cal->mean[3];
+      flp_in2_mid = prx_cal->mean[4];
 #if defined(SERIAL_DEBUG) && 0
       Serial.println("RX");
       calibrate_print_stat(prx_cal);
@@ -1775,6 +1788,13 @@ void apply_mixer_change(int16_t *change)
   
   // mixer
   int16_t tmp0, tmp1, tmp2, tmp3;
+  #define AIL_DELTA tmp0
+  #define ELE_DELTA tmp1
+  #define AIL_SCALE tmp2
+  #define ELE_SCALE tmp3
+  #define RUD_DELTA tmp0
+  #define RUD_SCALE tmp2
+  
   switch (wing_mode) {
   case WING_RUDELE_1AIL:
   case WING_RUDELE_2AIL:
@@ -1794,18 +1814,23 @@ void apply_mixer_change(int16_t *change)
     // set up for WING_DELTA_2AIL pin mapping first
     ail_out2 = ail_in2 + change[0];
     ailr_out2 = ailr_in2 + change[0];
-    tmp0 =  ail_in2_offset + RX_WIDTH_MID + change[0];
-    tmp1 =  ele_in2 + change[1];
-    
+    //jrb tmp0 =  ail_in2_offset + RX_WIDTH_MID + change[0];
+    AIL_DELTA =  (ail_in2 - ail_in2_mid)+ change[0];
+    //jrb tmp1 =  ele_in2 + change[1]; // ele input + elevator change
+    ELE_DELTA = (ele_in2 - ele_in2_mid) + change[1]; 
+
     // apply 100% (1/1)
     //ele_out2 = ((tmp0 + tmp1) >> 1);
     //rud_out2 = ((tmp0 - tmp1) >> 1) + RX_WIDTH_MID;
 
     // apply 125% (5/4)
-    tmp2 = tmp0 + tmp1;
-    ele_out2 = (tmp2 >> 1) + (tmp2 >> 3) - (RX_WIDTH_MID >> 2);
-    tmp2 = tmp0 - tmp1;
-    rud_out2 = (tmp2 >> 1) + (tmp2 >> 3) + RX_WIDTH_MID;
+    AIL_SCALE = (AIL_DELTA >> 1) + (AIL_DELTA >> 3);
+    ELE_SCALE = (ELE_DELTA >> 1) + (ELE_DELTA >> 3);
+  //jrb  ele_out2 = (tmp2 >> 1) + (tmp2 >> 3) - (RX_WIDTH_MID >> 2);
+    ele_out2 = ELE_SCALE - AIL_SCALE + ele_in2_mid;
+  //jrb    tmp2 = tmp0 - tmp1;
+  //jrb  rud_out2 = (tmp2 >> 1) + (tmp2 >> 3) + RX_WIDTH_MID;
+    rud_out2 = AIL_SCALE + ELE_SCALE + ail_in2_mid;
 
     // apply 150% (3/2)
     //tmp2 = tmp0 + tmp1;
@@ -1847,13 +1872,19 @@ void apply_mixer_change(int16_t *change)
   case WING_VTAIL_2AIL:
     ail_out2 = ail_in2 + change[0];
     ailr_out2 = ailr_in2 + change[0];
-    tmp1 =  ele_in2 + change[1];
-    tmp2 =  rud_in2 + change[2];
+    //jrb tmp1 =  ele_in2 + change[1];
+    //jrb tmp2 =  rud_in2 + change[2];
+    ELE_DELTA = (ele_in2 - ele_in2_mid) + change[1]; 
+    RUD_DELTA = (rud_in2 - rud_in2_mid) + change[2]; 
     // apply 125% (5/4)
-    tmp0 = tmp2 + tmp1;
-    ele_out2 = (tmp0 >> 1) + (tmp0 >> 3) - (RX_WIDTH_MID >> 2);
-    tmp0 = tmp2 - tmp1;
-    rud_out2 = (tmp0 >> 1) + (tmp0 >> 3) + RX_WIDTH_MID;    
+    //jrb tmp0 = tmp2 + tmp1;
+    RUD_SCALE = (RUD_DELTA >> 1) + (RUD_DELTA >> 3);
+    ELE_SCALE = (ELE_DELTA >> 1) + (ELE_DELTA >> 3);
+    //jrb ele_out2 = (tmp0 >> 1) + (tmp0 >> 3) - (RX_WIDTH_MID >> 2);
+    //jrb tmp0 = tmp2 - tmp1;
+    //jrb rud_out2 = (tmp0 >> 1) + (tmp0 >> 3) + RX_WIDTH_MID; 
+    ele_out2 = ELE_SCALE + RUD_SCALE + ele_in2_mid;
+    rud_out2 = RUD_SCALE + ELE_SCALE + rud_in2_mid;   
     break;
     
   case WING_DUCKERON:
@@ -2724,6 +2755,7 @@ again:
           ele_in2_mid = ele_in2;
           rud_in2_mid = rud_in2;
           ailr_in2_mid = ailr_in2;
+          flp_in2_mid = flp_in2;
         }
       }        
     }
@@ -2732,6 +2764,7 @@ again:
     ail_in2_offset = ((ail_in2 - ail_in2_mid) + (ailr_in2 - ailr_in2_mid)) >> 1;
     ele_in2_offset = ele_in2 - ele_in2_mid;
     rud_in2_offset = rud_in2 - rud_in2_mid;
+    flp_in2_offset = flp_in2 - flp_in2_mid;
 
     // vr_gain[] [-128, 128] from VRs or config
     
