@@ -1,0 +1,183 @@
+2015-08-18 FlightStab Change Log
+
+2015-08-18
+###################### This is untested experimental code ######################
+Added 2 new mounting orientations, Rotate 90 degrees Left and Rotate 90 degrees Right.
+Fixed Inflight Calibration which was not working properly for Delta and V-Tail modes.
+Added code to capture center stick for Flap channel.
+Updated Programming Box firmware to support new mounting options.
+
+
+2015-08-01
+###################### This is untested experimental code ######################
+Added support for dual ailerons when using a hardware modified RX3SM DSMx stabilizer.
+Note that the RX3SM DSM2 device is not supported as it does not have enough connectors.
+
+
+2015-04-30
+###################### This is untested experimental code ######################
+This code is based on the 2015-04-14 release code
+
+I have only done minimal bench testing of this code on a Flip 1.5 using only the
+SBUS and SBUS_OUT versions of the firmware.  All the other versions have
+been untested.  Do through ground testing if you plan to work with any of
+the Hex files in the repository.
+
+The following have been added or changed
+
+Timing of servo output pulses.
+------------------------------
+
+OFS emits the servo pulses in a serial order, one after the other.
+The default order has always been RUD, ELE, THR, AIL, AUX1, AILR, AUX2, FLAPS
+AUX1 is used internally for the Mode/Gain control and is not emitted on some 
+versions of the hardware.
+
+On aircraft that use more than one servo per axis (dual ailerons and/or dual 
+elevators) it is desirable to have both servos receive updated information at
+or near the same time.  In order to accomplish this version changes the servo
+output order to AIL, AILR, ELE, FLAPS (2nd elevator), RUD, THR, AUX2, AUX1.
+
+The old output order is still in the code and can be activated with the
+@define ORIGINAL_PWM_ORDER.
+
+NOTE that the output order has nothing to do with the received order in the
+serial modes.  You set those the say was as before - nothing has changed.
+
+Configuration SERVO_FRAME_RATE
+------------------------------
+
+This configuration parameter is used to slow down the servo update to 
+allow for the use of analog servos with fast input frame times like S.BUS.
+(9ms for Taranis, 11ms for Spektrum with OrangeRX, 14ms for Futaba).
+
+The previous use of this parameter had a special case for the value 0, it
+forced the servo out interval to be the same as the input interval if possible.
+With the serial output design of OFS, the servo interval can't be faster than
+the sum of the pulse widths of all the output channels.  Thus values greater
+than 0, did not do anything until the value used is greater than the sum of the
+pulse widths for all output channels.  Once equal to or greater than the sum of 
+all the pulse widths for all output channels it becomes effective.  If set to 
+a value such as 18 then the interval between servo outputs will be forced to
+18ms.  It is important to note that in this case the servo outputs will be
+asynchronous to the input timing.  This cause the latency between the TX
+and the servo pulses to be variable.
+
+The change I have made is to also use values of 1 and 2 as special cases
+in addition to 0.  When  the value of 1 is used then every other received
+frame will trigger the servo outputs.  When the value is 2 then every
+third received frame will trigger the servo outputs.  This forces the
+outputs to be synchronous the the TX frame time and keep the latency 
+somewhat constant (there will always be minor movement due to interrupt
+latencies with the processor being used.
+
+If the value is set to 1 and a Taranis is being used as the TX (which
+has a 9ms frame time) then the servo outputs will be at an 18ms
+interval and in synchronization with the Taranis received frame.
+
+Stabilized S.BUS output
+-----------------------
+
+A request was received to add the ability to receive an S.BUS frame,
+add the proper stabilization corrections and then construct an S.BUS
+output frame.  To eliminate unwanted interrupts during the processing,
+the servo output pulses are eliminated.
+
+The reason for the request was to allow the stabilizer to function with
+power distribution board that only function with serial data (like S.BUS)
+and decode and send signal and power to the servos.
+
+The hex files with SBUS_OUT in the file name perform this function.
+
+The S.BUS standard does not include frame rates as high as 18ms, thus
+only servos that can operate with a 9ms frame time should be used.
+
+The SERVO_FRAME_RATE settings can be used to skip 1 or 2 S.BUS output frames,
+but this is outside of the S.BUS specification and may or may not provide the
+desired results.
+
+
+2015-04-14
+Force gyro Digital Low Pass Filter to 5HZ (was 256HZ on MPU-6050 gyros)
+Add Programming Box configuration option to set Digital low Pass Filter Bandwidth
+
+2015-02-21 FlightStab.ino 
+Add use of D12 for AUX2 out with the Flip 1.5 in Serial mode.
+
+Force master_gain to 0 when gain (AUX_IN)is in the range of 1475us - 1575us.
+This is to allow master_ gain to have a valued of when when hysteresis is
+exited.  Previously, master_ gain went from 0 to 26 at hysteresis area exit.
+
+2015-02-07 FlightStab.ino 
+Change made on 2015-02-02 inadvertently moved the hysteresis for zero gain. 
+Restore to 1474us to 1525us for zero gain.
+
+2015-02-03 FlightStab.ino 
+MIXER_EPA settings were not being properly applied to ELE-R (normally Flap) 
+channel. Corrected firmware bug after Mixer was applied for RUD 2-ELE 2-AIL 
+mode.
+
+2015-02-02 FlightStab.ino
+Add #define RX_WIDTH_MODE_MID 1550
+This new value will be used to move gain input hysteresis to reside entirely in 
+the Hold Mode Range. This forces Rate Mode for any value below 1525 which 
+insures resetting any Hold Mode corrections when gain is set to 0.
+
+2015-01-30
+SerialRX.ino
+Use #define for mid channel value instead of hard coded 1520
+
+Made changes to FlightStab.h for added MIXER_EPA Mode for 900-2100us
+and new wing mode RUD 2-ELE 2-AIL
+
+Made changes to FlightStab.ino to support the new MIXER_EPA Mode and new wing 
+mode.  
+
+New wing mode required increasing the size of arrays mix_out_low_limit, 
+mix_out_high_limit and zero_correction.  
+
+Size of pout2[] in apply_mixer() also increased to allow tracking of flap 
+channel limits as flp_out2 is used for second elevator.  Size of loop applying 
+limits is now dynamic to allow flap channel to act as unconstrained pass through 
+when not being used for second elevator.
+
+Removed build option for MAX_TRAVEL as new MIXER_EPA eliminates the need.
+
+
+20141216
+FlightStab.ino and SerialRX.ino
+Add support for Multiplex and HoTT SRXL Protocol
+
+FlightStab.ino
+Add Flip 1.5 Build that allows 900us to 2100us travel
+
+
+20140831
+SerialRX.ino
+Use timer to determine if received serial data is crossing 2 frames
+for both SBUS & Spektrum
+
+
+20140829
+SerialRX.ino
+Use #defines for SBUS & Spektrum constants instead of hard coded numbers.
+Use defines for receive buffer size.
+Limit while loop to not exceed receive buffer size.
+Check for 0x00 value in byte 25 of sbus frame to validate frame.
+
+
+20140505
+FlightStab.ino
+Add missing defined(FLIP_1_5) in Setup function
+
+
+FlightStab.ino
+Fix logic bug in uint8_t i2c_read_reg() function
+
+
+
+
+
+
+
+
