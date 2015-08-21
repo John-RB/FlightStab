@@ -1827,10 +1827,10 @@ void apply_mixer_change(int16_t *change)
     AIL_SCALE = (AIL_DELTA >> 1) + (AIL_DELTA >> 3);
     ELE_SCALE = (ELE_DELTA >> 1) + (ELE_DELTA >> 3);
   //jrb  ele_out2 = (tmp2 >> 1) + (tmp2 >> 3) - (RX_WIDTH_MID >> 2);
-    ele_out2 = ELE_SCALE - AIL_SCALE + ele_in2_mid;
+    ele_out2 = AIL_SCALE + ELE_SCALE + ele_in2_mid;
   //jrb    tmp2 = tmp0 - tmp1;
   //jrb  rud_out2 = (tmp2 >> 1) + (tmp2 >> 3) + RX_WIDTH_MID;
-    rud_out2 = AIL_SCALE + ELE_SCALE + ail_in2_mid;
+    rud_out2 = AIL_SCALE - ELE_SCALE + ail_in2_mid;
 
     // apply 150% (3/2)
     //tmp2 = tmp0 + tmp1;
@@ -1884,7 +1884,7 @@ void apply_mixer_change(int16_t *change)
     //jrb tmp0 = tmp2 - tmp1;
     //jrb rud_out2 = (tmp0 >> 1) + (tmp0 >> 3) + RX_WIDTH_MID; 
     ele_out2 = ELE_SCALE + RUD_SCALE + ele_in2_mid;
-    rud_out2 = RUD_SCALE + ELE_SCALE + rud_in2_mid;   
+    rud_out2 = ELE_SCALE - RUD_SCALE + rud_in2_mid;   
     break;
     
   case WING_DUCKERON:
@@ -2192,7 +2192,7 @@ void stick_config(struct _stick_zone *psz)
   const int8_t param_ymax[] = {
     WING_RUDELE_2AIL,
     MIXER_EPA_TRACK, 
-    MOUNT_ROLL_90_RIGHT, 
+    MOUNT_ROTATE_90_RIGHT, 
     STICK_GAIN_THROW_QUARTER,
     MAX_ROTATE_HIGH,
     RATE_MODE_STICK_ROTATE_ENABLE,
