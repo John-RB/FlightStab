@@ -470,7 +470,8 @@ bool ow_loop(); // OneWireSerial.ino
 
 // <SWITCH>
 #define DIN_PORTB {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
-#define DIN_PORTC {NULL, &dummy_sw, NULL, NULL, NULL, NULL, NULL, NULL}
+#define DIN_PORTC {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}  // 2016-02-08 changed 2nd entry from &dummy_sw to NULL
+                                                                    // Removed long pulse on THR output at power on	
 #define DIN_PORTD {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
 
 // <SERVO>
@@ -1446,7 +1447,11 @@ void init_digital_out()
 {
   for (int8_t i=0; i<pwm_chan_size; i++) {
     if (pwm_chan_pin[i] >= 0)
-      pinMode(pwm_chan_pin[i], OUTPUT);
+      {	
+      	//jrb 2016-02-08  Force all Outputs Low before enabling pin as OUTPUT 
+      	digitalWrite(pwm_chan_pin[i], LOW);
+      	pinMode(pwm_chan_pin[i], OUTPUT);
+      }	
   }
 } 
 
