@@ -1,4 +1,15 @@
-2015-08-18 FlightStab Change Log
+2016-02-28 FlightStab Change Log
+
+2016-02-28
+###################### This is untested experimental code ######################
+Fixed problem with Stick Configuration not being able to select MAX.
+
+
+2016-02-09
+###################### This is untested experimental code ######################
+Throttle Channel had Wide Positive Pulse during initialization.
+
+
 
 2015-08-21
 ###################### This is untested experimental code ######################
