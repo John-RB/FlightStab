@@ -1,4 +1,12 @@
-2015-08-21 FlightStab Change Log
+2016-02-28 FlightStab Change Log
+
+2016-02-28
+Fixed problem with Stick Configuration not being able to select MAX.
+
+
+2016-02-09
+Throttle Channel had Wide Positive Pulse during initialization.
+
 
 2015-08-21
 A problem was discovered with the 2015-08-18 release.  An error in subtraction
