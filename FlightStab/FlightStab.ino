@@ -2196,7 +2196,7 @@ void stick_config(struct _stick_zone *psz)
   };
   const int8_t param_ymax[] = {
     WING_RUDELE_2AIL,
-    MIXER_EPA_TRACK, 
+    MIXER_EPA_MAX,		// jrb 2016-02-28 MIXER_EPA_TRACK, 
     MOUNT_ROTATE_90_RIGHT, 
     STICK_GAIN_THROW_QUARTER,
     MAX_ROTATE_HIGH,
