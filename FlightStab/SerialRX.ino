@@ -293,7 +293,9 @@ jrb*/
       if (sbus_return)
         RXcount++; 
     #endif
-  }  
+  } 
+  if (index >= SERIAL_FRAME_SIZE)	// his  bugfix 20170817
+		index = 0; 
   return (sbus_return); 
   #endif // SERIALRX_SRXL -------------------------------------------------------
 
